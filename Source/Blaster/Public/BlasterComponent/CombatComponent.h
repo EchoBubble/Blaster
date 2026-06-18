@@ -27,6 +27,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	void EquipWeapon(ABlasterWeapon* WeaponToEquip);
+	void SwapWeapons();
 	void Reload();
 	UFUNCTION(BlueprintCallable)
 	void FinishReload();
@@ -201,4 +202,6 @@ public:
 	FORCEINLINE ABlasterWeapon* GetEquippedWeapon() const {return EquippedWeapon;};
 	FORCEINLINE float GetCurrentFOV() const {return CurrentFOV;};
 	FORCEINLINE float GetDefaultFOV() const {return DefaultFOV;};
+
+	bool ShouldSwapWeapons();
 };

@@ -22,6 +22,7 @@ namespace EWeaponStateNamespace
 	{
 		Initial UMETA(DisplayName = "Initial State"),
 		Equipped UMETA(DisplayName = "Equipped"),
+		EquippedSecondary UMETA(DisplayName = "Equipped Secondary"),
 		Dropped UMETA(DisplayName = "Dropped")
 	};
 }
@@ -77,8 +78,12 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
-	
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void OnWeaponStateSet();
+	virtual void OnEquipped();
+	virtual void OnDropped();
+	virtual void OnEquippedSecondary();
 
 	UFUNCTION()
 	virtual void OnSphereOverlap(

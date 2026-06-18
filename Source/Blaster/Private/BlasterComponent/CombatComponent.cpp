@@ -437,6 +437,36 @@ void UCombatComponent::EquipWeapon(ABlasterWeapon* WeaponToEquip)
 	Character->bUseControllerRotationYaw = true;
 }
 
+void UCombatComponent::SwapWeapons()
+{
+	ABlasterWeapon* TempWeapon = EquippedWeapon;
+	EquippedWeapon = SecondaryWeapon;
+	SecondaryWeapon = TempWeapon;
+
+	EquippedWeapon->SetWeaponState(EWeaponStateNamespace::Equipped);
+	if (const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket")))
+	{
+		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+	}
+	EquippedWeapon->UpdateHUDAmmo();
+
+	//更新当前武器类型携带子弹量
+	ABlasterPlayerController* PlayerController = Cast<ABlasterPlayerController>(Character->GetController());
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+	if (PlayerController)
+	{
+		PlayerController->SetHUDCarriedAmmo(CarriedAmmo);
+	}
+
+	PlayEquipSound(EquippedWeapon);
+
+	SecondaryWeapon->SetWeaponState(EWeaponStateNamespace::EquippedSecondary);
+	AttachActorToBackupPack(SecondaryWeapon);
+}
+
 void UCombatComponent::EquipPrimaryWeapon(ABlasterWeapon* WeaponToEquip)
 {
 	if (!WeaponToEquip) return;
@@ -483,7 +513,7 @@ void UCombatComponent::EquipSecondaryWeapon(ABlasterWeapon* WeaponToEquip)
 {
 	if (!WeaponToEquip) return;
 	SecondaryWeapon = WeaponToEquip;
-	SecondaryWeapon->SetWeaponState(EWeaponStateNamespace::Equipped);
+	SecondaryWeapon->SetWeaponState(EWeaponStateNamespace::EquippedSecondary);
 	AttachActorToBackupPack(WeaponToEquip);
 	PlayEquipSound(SecondaryWeapon);
 	SecondaryWeapon->SetOwner(Character);
@@ -512,7 +542,7 @@ void UCombatComponent::OnRep_SecondaryWeapon()
 {
 	if (SecondaryWeapon && Character)
 	{
-		SecondaryWeapon->SetWeaponState(EWeaponStateNamespace::Equipped);
+		SecondaryWeapon->SetWeaponState(EWeaponStateNamespace::EquippedSecondary);
 		AttachActorToBackupPack(SecondaryWeapon);
 		PlayEquipSound(SecondaryWeapon);
 	}
@@ -650,6 +680,11 @@ bool UCombatComponent::IsReloadingShotgun() const
 	return CombatState == ECombatState::ECS_Reloading &&
 		EquippedWeapon &&
 		EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Shotgun;
+}
+
+bool UCombatComponent::ShouldSwapWeapons()
+{
+	return EquippedWeapon != nullptr && SecondaryWeapon != nullptr;
 }
 
 void UCombatComponent::PickupAmmo(EWeaponType::Type WeaponType, int32 AmmoAmount)
