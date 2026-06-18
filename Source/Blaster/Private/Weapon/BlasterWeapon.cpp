@@ -224,7 +224,16 @@ void ABlasterWeapon::OnRep_Owner()
 	}
 	else
 	{
-		UpdateHUDAmmo();
+		/*if (BlasterOwnerCharacter == nullptr)
+		{
+			BlasterOwnerCharacter = Cast<ABlasterCharacter>(Owner);
+		}
+		if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetEquippedWeapon()
+			&& BlasterOwnerCharacter->GetEquippedWeapon() == this)//如果当前武器是角色手里拿的主武器才更新 HUD
+		{
+			UpdateHUDAmmo();
+		}*/
+		//UpdateHUDAmmo();
 	}
 }
 

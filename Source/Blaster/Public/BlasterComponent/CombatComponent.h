@@ -64,6 +64,9 @@ protected:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
+	UFUNCTION()
+	void OnRep_SecondaryWeapon();
+
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
 	void SetHUDCrosshairs(float DeltaTime);
@@ -73,6 +76,14 @@ protected:
 
 	void HandleReload();
 	int32 AmountToReload();
+
+	/*
+	 * 装备武器
+	 */
+	void PlayEquipSound(ABlasterWeapon* WeaponToEquip);
+	void AttachActorToBackupPack(AActor* ActorToAttach);
+	void EquipPrimaryWeapon(ABlasterWeapon* WeaponToEquip);
+	void EquipSecondaryWeapon(ABlasterWeapon* WeaponToEquip);
 private:
 
 	UPROPERTY()
@@ -80,6 +91,9 @@ private:
 	
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	TObjectPtr<ABlasterWeapon> EquippedWeapon;
+
+	UPROPERTY(ReplicatedUsing = OnRep_SecondaryWeapon)
+	TObjectPtr<ABlasterWeapon> SecondaryWeapon;
 
 	UPROPERTY(EditAnywhere)
 	float BaseWalkSpeed;
