@@ -132,7 +132,7 @@ private:
 	int32 StartingPistolAmmo = 21;//手枪弹药初始值
 
 	UPROPERTY(EditAnywhere)
-	int32 StartingSMGAmmo = 180;//冲锋枪弹药初始值
+	int32 StartingSMGAmmo = 200;//冲锋枪弹药初始值
 
 	UPROPERTY(EditAnywhere)
 	int32 StartingShotgunAmmo = 40;//霰弹弹药初始值
