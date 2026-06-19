@@ -418,24 +418,23 @@ void ABlasterCharacter::PossessedBy(AController* NewController)
 
 void ABlasterCharacter::EquipButtonPressed()
 {
-	if (Combat)
-	{
-		if (OverlappingWeapon)
-		{
-			ServerEquipButtonPressed();
-		}
-		else if (Combat->ShouldSwapWeapons())//如果两把武器都存在，且不是重叠时按下
-		{
-			Combat->SwapWeapons();
-		}
-	}
+	if (bDisableGameplay) return;
+	if (Combat == nullptr) return;
+	
+	ServerEquipButtonPressed();
 }
 
 void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 {
-	if (Combat && OverlappingWeapon)
+	if (Combat == nullptr) return;
+	
+	if (OverlappingWeapon)
 	{
 		Combat->EquipWeapon(OverlappingWeapon);
+	}
+	else if (Combat->ShouldSwapWeapons())//如果两把武器都存在，且不是重叠时按下
+	{
+		Combat->SwapWeapons();
 	}
 }
 

@@ -402,8 +402,45 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 	DOREPLIFETIME(UCombatComponent, CombatState);
 }
 
+void UCombatComponent::SwapWeapons()
+{
+	if (Character == nullptr || !Character->HasAuthority()) return;
+	if (CombatState != ECombatState::ECS_Unoccupied) return;
+	if (EquippedWeapon == nullptr || SecondaryWeapon == nullptr) return;
+	
+	ABlasterWeapon* TempWeapon = EquippedWeapon;//缓存之前的主武器指针
+	EquippedWeapon = SecondaryWeapon;//主武器指针更改为次要武器指针
+	SecondaryWeapon = TempWeapon;//次要武器变更为主要武器
+
+	//主武器逻辑
+	EquippedWeapon->SetWeaponState(EWeaponStateNamespace::Equipped);
+	if (const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket")))
+	{
+		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+	}
+	EquippedWeapon->UpdateHUDAmmo();
+
+	//更新当前武器类型携带子弹量
+	ABlasterPlayerController* PlayerController = Cast<ABlasterPlayerController>(Character->GetController());
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+	if (PlayerController)
+	{
+		PlayerController->SetHUDCarriedAmmo(CarriedAmmo);
+	}
+
+	PlayEquipSound(EquippedWeapon);
+
+	//次要武器逻辑，不播放装备音效
+	SecondaryWeapon->SetWeaponState(EWeaponStateNamespace::EquippedSecondary);
+	AttachActorToBackupPack(SecondaryWeapon);
+}
+
 void UCombatComponent::PlayEquipSound(ABlasterWeapon* WeaponToEquip)
 {
+	if (!Character->IsLocallyControlled()) return;
 	if (WeaponToEquip->EquipSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, WeaponToEquip->EquipSound, Character->GetActorLocation());
@@ -435,36 +472,6 @@ void UCombatComponent::EquipWeapon(ABlasterWeapon* WeaponToEquip)
 	
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
-}
-
-void UCombatComponent::SwapWeapons()
-{
-	ABlasterWeapon* TempWeapon = EquippedWeapon;
-	EquippedWeapon = SecondaryWeapon;
-	SecondaryWeapon = TempWeapon;
-
-	EquippedWeapon->SetWeaponState(EWeaponStateNamespace::Equipped);
-	if (const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket")))
-	{
-		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
-	}
-	EquippedWeapon->UpdateHUDAmmo();
-
-	//更新当前武器类型携带子弹量
-	ABlasterPlayerController* PlayerController = Cast<ABlasterPlayerController>(Character->GetController());
-	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
-	{
-		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
-	}
-	if (PlayerController)
-	{
-		PlayerController->SetHUDCarriedAmmo(CarriedAmmo);
-	}
-
-	PlayEquipSound(EquippedWeapon);
-
-	SecondaryWeapon->SetWeaponState(EWeaponStateNamespace::EquippedSecondary);
-	AttachActorToBackupPack(SecondaryWeapon);
 }
 
 void UCombatComponent::EquipPrimaryWeapon(ABlasterWeapon* WeaponToEquip)

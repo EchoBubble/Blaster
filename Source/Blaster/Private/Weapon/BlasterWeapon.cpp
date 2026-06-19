@@ -224,7 +224,7 @@ void ABlasterWeapon::OnRep_Owner()
 	}
 	else
 	{
-		//UpdateHUDAmmo();
+		//UpdateHUDAmmo();初始武器在此时调用会因为时序问题而无法更新 HUD
 	}
 }
 
@@ -236,7 +236,6 @@ void ABlasterWeapon::OnRep_WeaponState()
 void ABlasterWeapon::SetWeaponState(const EWeaponStateNamespace::Type State)
 {
 	CurrentWeaponState = State;
-
 	OnWeaponStateSet();
 }
 
