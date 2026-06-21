@@ -52,6 +52,9 @@ public:
 	void PlayReloadMontage();
 	
 	void Elim();
+
+	void DropOrDestroyWeapon(ABlasterWeapon* Weapon);
+	void DropOrDestroyWeapons();
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
@@ -62,7 +65,7 @@ public:
 	bool bDisableGameplay = false;
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void ShowSniperScpeWidget(bool bShowScope);
+	void ShowSniperScopeWidget(bool bShowScope);
 
 	void UpdateHUDHealth();
 	void UpdateHUDAmmo();//无需调用，其实装备武器时就更新了，教程只是多一条路

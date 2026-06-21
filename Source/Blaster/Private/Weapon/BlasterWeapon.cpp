@@ -224,7 +224,14 @@ void ABlasterWeapon::OnRep_Owner()
 	}
 	else
 	{
-		//UpdateHUDAmmo();初始武器在此时调用会因为时序问题而无法更新 HUD
+		if (BlasterOwnerCharacter == nullptr)
+		{
+			BlasterOwnerCharacter = Cast<ABlasterCharacter>(GetOwner());
+		}
+		if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetEquippedWeapon() && BlasterOwnerCharacter->GetEquippedWeapon() == this)
+		{
+			UpdateHUDAmmo();//初始武器在前面的判断下调用会因为时序问题而无法更新 HUD，所以需要在 OnRep_EquippedWeapon 也进行调用
+		}
 	}
 }
 

@@ -461,11 +461,11 @@ void UCombatComponent::EquipWeapon(ABlasterWeapon* WeaponToEquip)
 {
 	if (Character == nullptr || WeaponToEquip == nullptr) return;
 	if (CombatState != ECombatState::ECS_Unoccupied) return;
-	if (EquippedWeapon != nullptr && SecondaryWeapon == nullptr)
+	if (EquippedWeapon != nullptr && SecondaryWeapon == nullptr)//有主武器，次要武器为空
 	{
 		EquipSecondaryWeapon(WeaponToEquip);
 	}
-	else//没有有主武器，副武器可能有可能没有
+	else//主武器可能有可能没有，存在副武器
 	{
 		EquipPrimaryWeapon(WeaponToEquip);
 	}
@@ -761,7 +761,7 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	}
 	if (Character->IsLocallyControlled() && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle)
 	{
-		Character->ShowSniperScpeWidget(bIsAiming);
+		Character->ShowSniperScopeWidget(bIsAiming);
 	}
 }
 
