@@ -27,6 +27,7 @@ ABlasterWeapon::ABlasterWeapon()
 	WeaponMesh->SetCollisionResponseToAllChannels(ECR_Block);
 	WeaponMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	WeaponMesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
 
 	WeaponMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_BLUE);
 	WeaponMesh->MarkRenderStateDirty();
@@ -36,6 +37,7 @@ ABlasterWeapon::ABlasterWeapon()
 	Magazine->SetupAttachment(WeaponMesh, FName("MagazineSocket"));
 	Magazine->SetCollisionResponseToAllChannels(ECR_Block);
 	Magazine->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+	Magazine->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
 
 	AreaSphere = CreateDefaultSubobject<USphereComponent>(FName("AreaSphere"));
 	AreaSphere->SetupAttachment(GetRootComponent());

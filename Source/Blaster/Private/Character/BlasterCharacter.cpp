@@ -48,7 +48,8 @@ ABlasterCharacter::ABlasterCharacter()
 	
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
-
+	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+	
 	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 
 	SetNetUpdateFrequency(100.f);
@@ -384,7 +385,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimePropert
 
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, AO_Yaw, COND_SkipOwner);
-	DOREPLIFETIME(ABlasterCharacter, AO_Pitch);
+	DOREPLIFETIME_CONDITION(ABlasterCharacter, AO_Pitch, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, TurningInPlace, COND_SkipOwner);
 	DOREPLIFETIME(ABlasterCharacter, Health)
 	DOREPLIFETIME(ABlasterCharacter, bDisableGameplay);
