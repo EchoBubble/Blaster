@@ -59,7 +59,7 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
 
-	void TryFireAfterReload();//写在这主要是减少武器的耦合性
+	void TryFireAfterReload();//写在这主要是减少武器的 耦合性
 
 	UPROPERTY(Replicated)
 	bool bDisableGameplay = false;
@@ -235,5 +235,13 @@ private:
 	float RecoilPitchRecoveryRemaining = 0.f;
 	float RecoilYawRecoveryRemaining = 0.f;
 	float CurrentRecoilRecoverySpeed = 8.f;
+
+	UPROPERTY(EditAnywhere, Category = "Fall Reset")
+	float FallResetZ = -5000.f;
+
+	FTransform ServerStartTransform;
+
+	void CheckFallOutOfMap();
+	void ResetToStartPosition();
 
 };

@@ -62,6 +62,12 @@ ABlasterCharacter::ABlasterCharacter()
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	if (HasAuthority())
+	{
+		CheckFallOutOfMap();
+	}
+	
 	if (HasAuthority() || IsLocallyControlled())
 	{
 		AimOffset(DeltaTime);
@@ -147,6 +153,9 @@ void ABlasterCharacter::BeginPlay()
 	if (HasAuthority())
 	{
 		OnTakeAnyDamage.AddDynamic(this, &ThisClass::ReceiveDamage);
+
+		// 服务器记录玩家出生位置，一般就是 PlayerStart 生成出来的位置
+		ServerStartTransform = GetActorTransform();
 	}
 
 	//UpdateHUDAmmo();
@@ -685,4 +694,34 @@ void ABlasterCharacter::RecoverRecoil(float DeltaTime)
 		AddControllerYawInput(YawStep);
 		RecoilYawRecoveryRemaining -= YawStep;
 	}
+}
+
+void ABlasterCharacter::CheckFallOutOfMap()
+{
+	if (!HasAuthority()) return;
+	if (bEliminated) return;
+
+	if (GetActorLocation().Z < FallResetZ)
+	{
+		ResetToStartPosition();
+	}
+}
+
+void ABlasterCharacter::ResetToStartPosition()
+{
+	if (!HasAuthority()) return;
+    
+    	if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+    	{
+    		MoveComp->StopMovementImmediately();
+    		MoveComp->Velocity = FVector::ZeroVector;
+    	}
+    
+    	SetActorLocationAndRotation(
+    		ServerStartTransform.GetLocation(),
+    		ServerStartTransform.GetRotation(),
+    		false,
+    		nullptr,
+    		ETeleportType::TeleportPhysics
+    	);
 }
