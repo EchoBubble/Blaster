@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "BlasterComponent/CombatComponent.h"
 #include "Character/BlasterCharacter.h"
+#include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "GameFramework/Character.h"
@@ -58,15 +59,44 @@ void ABlasterPlayerController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	SetHUDTime();
-
-	TimeSyncRunningTime += DeltaTime;
-	if (IsLocalController() && TimeSyncRunningTime > TimeSyncFrequency)
-	{
-		ServerRequestServerTime(GetWorld()->GetTimeSeconds());
-		TimeSyncRunningTime = 0.f;
-	}
-
+	CheckTimeSync(DeltaTime);//隔一段时间重新校准一次客户端的时间
 	PollInit();
+	
+	CheckPing(DeltaTime);
+}
+
+void ABlasterPlayerController::CheckPing(float DeltaTime)
+{
+	if (HasAuthority()) return;
+	
+	HighPingRunningTime += DeltaTime;
+	if (HighPingRunningTime > CheckPingFrequency)//一段时间后就需要检查 ping
+	{
+		if (PlayerState == nullptr) PlayerState = GetPlayerState<APlayerState>();
+		if (PlayerState)
+		{
+			if (PlayerState->GetPingInMilliseconds() > HighPingThreshold)//如果 Ping 大于指定值就显示图标
+			{
+				HighPingWarning();
+				PingAnimationRunningTime = 0.f;
+			}
+		}
+		HighPingRunningTime = 0.f;
+	}
+	
+	bool bHighPingAnimationPlaying = 
+		BlasterHUD && BlasterHUD->CharacterOverlay 
+		&& BlasterHUD->CharacterOverlay->HighPingImage && BlasterHUD->CharacterOverlay->HighPingAnimation 
+		&&BlasterHUD->CharacterOverlay->IsAnimationPlaying(BlasterHUD->CharacterOverlay->HighPingAnimation);
+	
+	if (bHighPingAnimationPlaying)
+	{
+		PingAnimationRunningTime += DeltaTime;
+		if (PingAnimationRunningTime > HighPingDuration)
+        {
+        	StopHighPingWarning();
+        }
+	}
 }
 
 void ABlasterPlayerController::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -490,6 +520,60 @@ void ABlasterPlayerController::PollInit()
 				}
 			}
 		}	
+	}
+}
+
+void ABlasterPlayerController::CheckTimeSync(float DeltaTime)
+{
+	TimeSyncRunningTime += DeltaTime;
+	if (IsLocalController() && TimeSyncRunningTime > TimeSyncFrequency)
+	{
+		ServerRequestServerTime(GetWorld()->GetTimeSeconds());//隔一段时间访问下客户端时间并校准
+		TimeSyncRunningTime = 0.f;
+	}
+}
+
+void ABlasterPlayerController::HighPingWarning()
+{
+	if (!IsLocalController()) return;
+
+	if (BlasterHUD == nullptr)
+	{
+		BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+	}
+	if (BlasterHUD == nullptr) return;
+	bool bHUDValid = 
+		BlasterHUD && BlasterHUD->CharacterOverlay 
+		&& BlasterHUD->CharacterOverlay->HighPingImage && BlasterHUD->CharacterOverlay->HighPingAnimation;
+	if (bHUDValid)
+	{
+		BlasterHUD->CharacterOverlay->HighPingImage->SetVisibility(ESlateVisibility::Visible);
+		BlasterHUD->CharacterOverlay->HighPingImage->SetRenderOpacity(1.f);
+		BlasterHUD->CharacterOverlay->PlayAnimation(
+			BlasterHUD->CharacterOverlay->HighPingAnimation, 0.f, 5);
+	}
+}
+
+void ABlasterPlayerController::StopHighPingWarning()
+{
+	if (!IsLocalController()) return;
+
+	if (BlasterHUD == nullptr)
+	{
+		BlasterHUD = Cast<ABlasterHUD>(GetHUD());
+	}
+	if (BlasterHUD == nullptr) return;
+	bool bHUDValid = 
+		BlasterHUD && BlasterHUD->CharacterOverlay 
+		&& BlasterHUD->CharacterOverlay->HighPingImage && BlasterHUD->CharacterOverlay->HighPingAnimation;
+	if (bHUDValid)
+	{
+		if (BlasterHUD->CharacterOverlay->IsAnimationPlaying(BlasterHUD->CharacterOverlay->HighPingAnimation))
+		{
+			BlasterHUD->CharacterOverlay->StopAnimation(BlasterHUD->CharacterOverlay->HighPingAnimation);
+		}
+		BlasterHUD->CharacterOverlay->HighPingImage->SetRenderOpacity(0.f);
+		BlasterHUD->CharacterOverlay->HighPingImage->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 

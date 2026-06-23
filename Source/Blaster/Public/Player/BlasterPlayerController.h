@@ -67,12 +67,17 @@ protected:
 	float TimeSyncFrequency = 5.f;//查询频率
 
 	float TimeSyncRunningTime = 0.f;//记录 Delta 值
+	void CheckTimeSync(float DeltaTime);
 
 	UFUNCTION(Server, Reliable)
 	void ServerCheckMatchState();
 
 	UFUNCTION(Client, Reliable)
 	void ClientJoinMidGame(FName StateOfMatch, float Warmup, float Cooldown, float Match, float StartingTime);
+	
+	void HighPingWarning();
+	void StopHighPingWarning();
+	void CheckPing(float DeltaTime);
 
 private:
 
@@ -155,6 +160,18 @@ private:
 
 	bool bInitializeWeaponAmmo = false;
 	bool bInitializeCarriedAmmo = false;
+	
+	/*
+	 * ping
+	 */
+	float HighPingRunningTime = 0.f;	//距离上次检查 Ping 过了多久
+	UPROPERTY(EditAnywhere)
+	float HighPingDuration = 5.f;		//高 Ping 警告最多显示多久，默认 5 秒
+	UPROPERTY(EditAnywhere)
+	float CheckPingFrequency = 20.f;	//每隔多久检查一次 Ping，默认 20 秒
+	UPROPERTY(EditAnywhere)
+	float HighPingThreshold = 50.f;		//超过多少 Ping 算高延迟，默认 50
+	float PingAnimationRunningTime = 0.f;//当前警告动画已经播放多久
 	
 	/*
 	 * 

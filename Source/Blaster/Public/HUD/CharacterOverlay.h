@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "CharacterOverlay.generated.h"
 
+class UImage;
 class UTextBlock;
 class UProgressBar;
 /**
@@ -37,4 +38,10 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> MatchCountdownText;
+	
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> HighPingImage;
+	
+	UPROPERTY(meta = (BindWidgetAnim), Transient)//Transient:这个变量只在运行时用，不需要保存到磁盘里。
+	TObjectPtr<UWidgetAnimation> HighPingAnimation;
 };
