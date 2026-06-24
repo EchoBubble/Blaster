@@ -159,7 +159,7 @@ public:
 	void SetWeaponState(const EWeaponStateNamespace::Type State);
 
 	virtual void Fire(const FVector& HitLocation);
-	void PlayFireEffects();
+	//void PlayFireEffects();
 
 	UPROPERTY(EditAnywhere, Category = "Crosshairs")
 	TObjectPtr<UTexture2D> CrosshairsCenter;

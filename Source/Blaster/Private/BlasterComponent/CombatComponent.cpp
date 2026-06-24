@@ -219,8 +219,7 @@ void UCombatComponent::Fire()
 			// Listen Server 自己开火不需要预测，因为 ServerFire 会立刻执行
 			if (Character->IsLocallyControlled() && !Character->HasAuthority())
 			{
-				Character->PlayFireMontage(bAiming);
-				EquippedWeapon->PlayFireEffects(); // 播放本地的枪口火焰和音效
+				LocalFire(HitTarget);
 			}
 		}
 		// 2. 告诉服务器去干活
@@ -249,11 +248,17 @@ void UCombatComponent::Fire()
 	}
 }
 
+void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
+{
+	Character->PlayFireMontage(bAiming);
+	EquippedWeapon->Fire(TraceHitTarget); // 播放本地的枪口火焰和音效
+}
+
 void UCombatComponent::ServerFire_Implementation(FVector_NetQuantize TraceHitTarget)
 {
 	if (EquippedWeapon == nullptr || Character == nullptr) return;
 	const bool bReloadingShotgun = IsReloadingShotgun();
-	if (!bReloadingShotgun && CombatState != ECombatState::ECS_Unoccupied)
+	if (!bReloadingShotgun && CombatState != ECombatState::ECS_Unoccupied)//只有霰弹枪换弹的时候才能开火
 	{
 		return;
 	}
@@ -276,32 +281,24 @@ void UCombatComponent::NetMulticastFire_Implementation(FVector_NetQuantize Trace
 {
 	if (Character == nullptr || EquippedWeapon == nullptr) return;
 	// 服务器已经在 ServerFire_Implementation 里执行过了，避免重复播放/重复逻辑
-	if (Character->HasAuthority())
-	{
-		return;
-	}
+	if (Character->HasAuthority()) return;
 
 	// 开火者本地已经预测播放过了，避免播两遍
-	if (Character->IsLocallyControlled())
-	{
-		return;
-	}
+	if (Character->IsLocallyControlled())return;
+	
 
 	//霰弹枪可以直接开火
 	const bool bReloadingShotgun = IsReloadingShotgun();
-
 	if (!bReloadingShotgun && CombatState != ECombatState::ECS_Unoccupied)
 	{
 		return;
 	}
-
 	if (bReloadingShotgun)
 	{
 		CombatState = ECombatState::ECS_Unoccupied;
 	}
 
-	Character->PlayFireMontage(bAiming);
-	EquippedWeapon->PlayFireEffects();
+	LocalFire(TraceHitTarget);
 }
 
 void UCombatComponent::StartFireTimer()

@@ -108,9 +108,9 @@ private:
 	bool bCanFire = true; // 防止玩家疯狂点击鼠标突破射速限制
 
 	FTimerHandle FireTimerHandle;
-
-	UFUNCTION()
+	
 	void Fire();
+	void LocalFire(const FVector_NetQuantize& TraceHitTarget);
 
 	UFUNCTION(Server, Reliable)
 	void ServerFire(FVector_NetQuantize TraceHitTarget);

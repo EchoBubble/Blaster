@@ -309,12 +309,6 @@ void ABlasterWeapon::OnEquippedSecondary()
 
 void ABlasterWeapon::Fire(const FVector& HitLocation)
 {
-	PlayFireEffects();
-	SpendRound();
-}
-
-void ABlasterWeapon::PlayFireEffects()
-{
 	if (WeaponMesh == nullptr) return;
 
 	const FName SocketNameToUse = WeaponMesh->DoesSocketExist(MuzzleFlashSocketName)
@@ -374,6 +368,10 @@ void ABlasterWeapon::PlayFireEffects()
 	{
 		WeaponMesh->PlayAnimation(FireAnimation, false);
 	}
-	//SpendRound();
+	
+	if (HasAuthority())
+	{
+		SpendRound();
+	}
 }
 
