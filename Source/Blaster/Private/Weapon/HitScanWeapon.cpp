@@ -8,7 +8,6 @@
 #include "Character/BlasterCharacter.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
 
 void AHitScanWeapon::Fire(const FVector& HitLocation)
 {
@@ -64,29 +63,11 @@ void AHitScanWeapon::SpawnBeamParticle_Implementation(UWorld* World, const FTran
 	}
 }
 
-FVector AHitScanWeapon::TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget)
-{
-	FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();//计算起点到目标的方向
-	FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;//朝向目标并走一个单位
-	FVector RandVector = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadius);//球体范围内随机偏移
-	FVector EndLoc = SphereCenter + RandVector;//从球心开始后随机偏移的位置
-	FVector ToEndLoc = EndLoc - TraceStart;//枪口指向球内随机点 EndLoc 的方向向量(也包含距离，可提部分 safe normal 限制)
-
-	/*DrawDebugSphere(GetWorld(), SphereCenter, SphereRadius, 12, FColor::Red, true);
-	DrawDebugSphere(GetWorld(), EndLoc, 4.f, 12, FColor::Orange, true);
-	DrawDebugLine(GetWorld(),
-		TraceStart, FVector(TraceStart + ToEndLoc.GetSafeNormal() * TRACE_LENGTH),
-		FColor::Cyan, true);*/
-
-	return FVector(TraceStart + ToEndLoc.GetSafeNormal() * TRACE_LENGTH);
-}
-
 void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit, const FTransform& SocketTransform)
 {
 	if (UWorld* World = GetWorld())
 	{
-		FVector End =
-			bUseScatter ? TraceEndWithScatter(TraceStart, HitTarget) : TraceStart + (HitTarget - TraceStart) * 1.25f;
+		FVector End = TraceStart + (HitTarget - TraceStart) * 1.25f;//这里的乘法只会改变距离，方向不会更改
 		
 		World->LineTraceSingleByChannel(OutHit, TraceStart, End, BlasterCollisionChannels::WeaponTrace);
 
@@ -94,6 +75,7 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 		if (OutHit.bBlockingHit)
 		{
 			BeamEnd = OutHit.ImpactPoint;
+			DrawDebugSphere(GetWorld(), BeamEnd, SphereRadius, 12, FColor::Red, true);
 			PlayImpactEffect(World, OutHit);
 		}
 		SpawnBeamParticle(World, SocketTransform, BeamEnd);

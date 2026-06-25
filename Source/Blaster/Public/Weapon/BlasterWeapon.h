@@ -27,6 +27,16 @@ namespace EWeaponStateNamespace
 	};
 }
 
+UENUM(BlueprintType)
+enum class EFireType : uint8
+{
+	EFT_HitScan UMETA(DisplayName = "Hit Scan Weapon"),
+	EFT_Projectile UMETA(DisplayName = "Projectile Weapon"),
+	EFT_Shotgun UMETA(DisplayName = "Shotgun Weapon"),
+
+	EFT_MAX UMETA(DisplayName = "DefaultMAX")
+};
+
 UCLASS()
 class BLASTER_API ABlasterWeapon : public AActor
 {
@@ -75,6 +85,15 @@ public:
 
 	bool bDestroyWeapon = false;
 	
+	UPROPERTY(EditAnywhere)
+	EFireType FireType;
+	
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	bool bUseScatter = false;
+	
+	//返回弹道
+	FVector TraceEndWithScatter(const FVector& HitTarget);
+	
 protected:
 
 	virtual void BeginPlay() override;
@@ -97,6 +116,17 @@ protected:
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex
 	);
+	
+	/*
+	 *  散射射线
+	 */
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float DistanceToSphere = 800.f;//枪口到准星目标方向的延伸，到时候会在这个地方生成一个球体，每次开火会在球里面随机选点作为散射点
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float SphereRadius = 75.f;//球体大小
+	
 private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere)
@@ -201,6 +231,7 @@ public:
 	bool IsFull();
 
 	void UpdateHUDAmmo();
+
 
 public:
 	/*

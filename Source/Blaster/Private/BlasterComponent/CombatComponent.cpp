@@ -213,17 +213,20 @@ void UCombatComponent::Fire()
 	{
 		bCanFire = false;
 
-		if (Character)
+		switch (EquippedWeapon->FireType)
 		{
-			// 1. 客户端预测：只要是我自己开的枪，不等服务器，立刻播动画！
-			// Listen Server 自己开火不需要预测，因为 ServerFire 会立刻执行
-			if (Character->IsLocallyControlled() && !Character->HasAuthority())
-			{
-				LocalFire(HitTarget);
-			}
+		case EFireType::EFT_Projectile:
+			FireProjectileWeapon();
+			break;
+		case EFireType::EFT_HitScan:
+			FireHitScanWeapon();
+			break;
+		case EFireType::EFT_Shotgun:
+			FireShotgun();
+			break;
+		default:
+			 break;
 		}
-		// 2. 告诉服务器去干活
-		ServerFire(HitTarget);
 
 		if (Character && Character->IsLocallyControlled() && EquippedWeapon)
 		{
@@ -246,6 +249,38 @@ void UCombatComponent::Fire()
 	{
 		Reload();
 	}
+}
+
+void UCombatComponent::FireProjectileWeapon()
+{
+	if (EquippedWeapon && Character)
+	{
+		// 1. 客户端预测：只要是我自己开的枪，不等服务器，立刻播动画！
+		// Listen Server 自己开火不需要预测，因为 ServerFire 会立刻执行
+		if (Character->IsLocallyControlled() && !Character->HasAuthority())
+		{
+			LocalFire(HitTarget);
+		}
+		ServerFire(HitTarget);// 2. 告诉服务器去干活
+	}
+}
+
+void UCombatComponent::FireHitScanWeapon()
+{
+	if (EquippedWeapon && Character)
+	{
+		HitTarget = EquippedWeapon->bUseScatter ? EquippedWeapon->TraceEndWithScatter(HitTarget) : HitTarget;
+		if (Character->IsLocallyControlled() && !Character->HasAuthority())
+		{
+			LocalFire(HitTarget);
+		}
+		ServerFire(HitTarget);
+	}
+}
+
+void UCombatComponent::FireShotgun()
+{
+	
 }
 
 void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
