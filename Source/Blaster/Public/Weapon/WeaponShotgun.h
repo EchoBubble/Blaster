@@ -16,6 +16,7 @@ public:
 	AWeaponShotgun();
 
 	virtual void Fire(const FVector& HitLocation) override;
+	void ShoutgunTraceEndWithScatter(const FVector& HitLocation, TArray<FVector>& HitTargets);
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")

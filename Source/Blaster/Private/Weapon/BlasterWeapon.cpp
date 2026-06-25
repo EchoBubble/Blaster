@@ -380,11 +380,11 @@ FVector ABlasterWeapon::TraceEndWithScatter(const FVector& HitTarget)
 	const FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 	const FVector TraceStart = SocketTransform.GetLocation();
 	
-	FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();//计算起点到目标的方向
-	FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;//朝向目标并走一个单位
-	FVector RandVector = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadius);//球体范围内随机偏移
-	FVector EndLoc = SphereCenter + RandVector;//从球心开始后随机偏移的位置
-	FVector ToEndLoc = EndLoc - TraceStart;//枪口指向球内随机点 EndLoc 的方向向量(也包含距离，可提部分 safe normal 限制)
+	const FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();//计算起点到目标的方向
+	const FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;//朝向目标并走一个单位
+	const FVector RandVector = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadius);//球体范围内随机偏移
+	const FVector EndLoc = SphereCenter + RandVector;//从球心开始后随机偏移的位置
+	const FVector ToEndLoc = EndLoc - TraceStart;//枪口指向球内随机点 EndLoc 的方向向量(也包含距离，可提部分 safe normal 限制)
 
 	/*DrawDebugSphere(GetWorld(), SphereCenter, SphereRadius, 12, FColor::Red, true);
 	DrawDebugSphere(GetWorld(), EndLoc, 4.f, 12, FColor::Orange, true);

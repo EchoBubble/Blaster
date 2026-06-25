@@ -13,6 +13,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Player/BlasterPlayerController.h"
 #include "Weapon/BlasterWeapon.h"
+#include "Weapon/WeaponShotgun.h"
 
 
 UCombatComponent::UCombatComponent(): bAiming(false), bFireButtonPressed(false), HitTarget()
@@ -280,7 +281,12 @@ void UCombatComponent::FireHitScanWeapon()
 
 void UCombatComponent::FireShotgun()
 {
+	AWeaponShotgun* Shotgun = Cast<AWeaponShotgun>(EquippedWeapon);
+	if (Shotgun == nullptr || Character == nullptr) return;
+	if (!IsReloadingShotgun() && CombatState != ECombatState::ECS_Unoccupied) return;
 	
+	TArray<FVector> HitTargets;
+	Shotgun->ShoutgunTraceEndWithScatter(HitTarget,HitTargets);
 }
 
 void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
