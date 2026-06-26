@@ -19,11 +19,9 @@ public:
 	virtual void Fire(const FVector& HitLocation) override;
 	
 protected:
-	UFUNCTION(NetMulticast, Reliable)
-	void PlayImpactEffect(UWorld* World, const FHitResult& InHit);
 
-	UFUNCTION(NetMulticast, Reliable)
-	void SpawnBeamParticle(UWorld* World, const FTransform& SocketTransform, const FVector& Vector);
+	void PlayImpactEffect(UWorld* World, const FHitResult& InHit) const;
+	void SpawnBeamParticle(UWorld* World, const FTransform& SocketTransform, const FVector& Vector) const;
 
 	/*
 	 * 霰弹枪

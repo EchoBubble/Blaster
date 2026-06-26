@@ -42,7 +42,7 @@ void AHitScanWeapon::Fire(const FVector& HitLocation)
 	}
 }
 
-void AHitScanWeapon::PlayImpactEffect_Implementation(UWorld* World, const FHitResult& InHit)
+void AHitScanWeapon::PlayImpactEffect(UWorld* World, const FHitResult& InHit) const
 {
 	if (ImpactParticles)
 	{
@@ -51,7 +51,7 @@ void AHitScanWeapon::PlayImpactEffect_Implementation(UWorld* World, const FHitRe
 	}
 }
 
-void AHitScanWeapon::SpawnBeamParticle_Implementation(UWorld* World, const FTransform& SocketTransform, const FVector& Vector)
+void AHitScanWeapon::SpawnBeamParticle(UWorld* World, const FTransform& SocketTransform, const FVector& Vector) const
 {
 	if (BeamParticles)
 	{
@@ -76,7 +76,7 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 		{
 			BeamEnd = OutHit.ImpactPoint;
 			DrawDebugSphere(GetWorld(), BeamEnd, SphereRadius, 12, FColor::Red, true);
-			PlayImpactEffect(World, OutHit);//本地如果到这里也会执行，只是不会进行广播
+			PlayImpactEffect(World, OutHit);
 		}
 		SpawnBeamParticle(World, SocketTransform, BeamEnd);
 	}
