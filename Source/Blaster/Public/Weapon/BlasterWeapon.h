@@ -165,16 +165,24 @@ private:
 	/*
 	 *  Ammo
 	 */
-	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo)
+	UPROPERTY(EditAnywhere)
 	int32 Ammo;// 当前武器里剩多少发子弹
+	
+	UFUNCTION(Client, Reliable)
+	void ClientUpdateAmmo(int32 ServerAmmo);
 
-	UFUNCTION()
-	void OnRep_Ammo();
-
+	UFUNCTION(Client, Reliable)
+	void ClientAddAmmo(int32 AmmoToAdd);
+	
 	void SpendRound();
 	
 	UPROPERTY(EditAnywhere)
 	int32 MagCapacity;// 弹匣容量，比如 30 发
+	
+	// 客户端已经预测消耗、但服务器还没确认回来的开火次数
+	// SpendRound 在客户端预测时 ++
+	// ClientUpdateAmmo 收到服务器确认时 --
+	int32 Sequence = 0;
 
 	UPROPERTY()
 	TObjectPtr<ABlasterCharacter> BlasterOwnerCharacter;

@@ -63,7 +63,6 @@ void ABlasterWeapon::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ABlasterWeapon, CurrentWeaponState);
-	DOREPLIFETIME(ABlasterWeapon, Ammo);
 }
 
 void ABlasterWeapon::MulticastImpactEffects_Implementation(FVector_NetQuantize ImpactPoint,
@@ -98,12 +97,6 @@ void ABlasterWeapon::Dropped()
 	SetOwner(nullptr);
 	BlasterOwnerCharacter = nullptr;
 	BlasterOwnerController = nullptr;
-}
-
-void ABlasterWeapon::AddAmmo(const int32& AmmoToAdd)
-{
-	Ammo = FMath::Clamp(Ammo + AmmoToAdd, 0, MagCapacity);
-	UpdateHUDAmmo();
 }
 
 void ABlasterWeapon::EnableCustomDepth(bool bEnable)
@@ -154,7 +147,45 @@ void ABlasterWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent
 
 void ABlasterWeapon::SpendRound()
 {
-	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity);
+	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity);//先本地进行扣款并更新 HUD，当然服务器也会扣
+	UpdateHUDAmmo();
+	if (HasAuthority())
+	{
+		ClientUpdateAmmo(Ammo);//由服务器告诉客户端当前的子弹数量
+	}
+	else
+	{
+		++Sequence;//客户端记录服务器还没确认的请求
+	}
+}
+
+void ABlasterWeapon::ClientUpdateAmmo_Implementation(int32 ServerAmmo)
+{
+	//这里可以理解为：先用服务器传递的值，然后减去一次请求，由于客户端可能发射了多枚子弹，这里还需要把剩下的请求减去，已达到真实的数据，解决网络延迟问题
+	if (HasAuthority()) return;
+	Ammo = ServerAmmo;
+	--Sequence;
+	Ammo -= Sequence;
+	UpdateHUDAmmo();
+}
+
+void ABlasterWeapon::AddAmmo(const int32& AmmoToAdd)
+{
+	Ammo = FMath::Clamp(Ammo + AmmoToAdd, 0, MagCapacity);
+	UpdateHUDAmmo();
+	ClientAddAmmo(AmmoToAdd);
+}
+
+void ABlasterWeapon::ClientAddAmmo_Implementation(int32 AmmoToAdd)
+{
+	if (HasAuthority()) return;
+	Ammo = FMath::Clamp(Ammo + AmmoToAdd, 0, MagCapacity);
+	
+	if (BlasterOwnerCharacter == nullptr)BlasterOwnerCharacter = Cast<ABlasterCharacter>(GetOwner());
+	if (BlasterOwnerCharacter && BlasterOwnerCharacter->Combat && IsFull())
+	{
+		BlasterOwnerCharacter->Combat->JumpToShotgunEnd();
+	}
 	UpdateHUDAmmo();
 }
 
@@ -193,26 +224,6 @@ void ABlasterWeapon::UpdateHUDAmmo()
 		return;
 	}
 	BlasterOwnerController->SetHUDWeaponAmmo(Ammo);
-}
-
-void ABlasterWeapon::OnRep_Ammo()
-{
-	if (BlasterOwnerCharacter == nullptr) BlasterOwnerCharacter = Cast<ABlasterCharacter>(GetOwner());
-	
-	if (BlasterOwnerCharacter &&
-		BlasterOwnerCharacter->Combat && IsFull() &&
-		BlasterOwnerCharacter->Combat->GetEquippedWeapon()->GetWeaponType() == EWeaponType::EWT_Shotgun)
-	{
-		BlasterOwnerCharacter->Combat->JumpToShotgunEnd();
-	}
-	
-	UpdateHUDAmmo();
-
-	ABlasterCharacter* OwnerCharacter = Cast<ABlasterCharacter>(GetOwner());
-	if (OwnerCharacter && OwnerCharacter->IsLocallyControlled())
-	{
-		OwnerCharacter->TryFireAfterReload();
-	}
 }
 
 void ABlasterWeapon::OnRep_Owner()
@@ -367,10 +378,7 @@ void ABlasterWeapon::Fire(const FVector& HitLocation)
 		WeaponMesh->PlayAnimation(FireAnimation, false);
 	}
 	
-	if (HasAuthority())
-	{
-		SpendRound();
-	}
+	SpendRound();
 }
 
 FVector ABlasterWeapon::TraceEndWithScatter(const FVector& HitTarget)
