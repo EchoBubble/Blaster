@@ -109,23 +109,33 @@ private:
 
 	FTimerHandle FireTimerHandle;
 	
+	void StartFireTimer();
+	void FireTimerFinished();
+	
+	/*
+	 * 开火
+	 */
 	void Fire();
 	void FireProjectileWeapon();
 	void FireHitScanWeapon();
 	void FireShotgun();
 	void LocalFire(const FVector_NetQuantize& TraceHitTarget);
+	void ShotgunLocalFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
 
 	UFUNCTION(Server, Reliable)
 	void ServerFire(FVector_NetQuantize TraceHitTarget);
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void NetMulticastFire(FVector_NetQuantize TraceHitTarget);
+	
+	UFUNCTION(Server, Reliable)
+	void ServerShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastShotgunFire(const TArray<FVector_NetQuantize>& TraceHitTargets);
 
 	UFUNCTION(Server, Reliable)
 	void SetFireButtonPress(bool FirePressed);
-	
-	void StartFireTimer();
-	void FireTimerFinished();
 
 	bool CanFire() const;
 	

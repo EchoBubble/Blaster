@@ -76,7 +76,7 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 		{
 			BeamEnd = OutHit.ImpactPoint;
 			DrawDebugSphere(GetWorld(), BeamEnd, SphereRadius, 12, FColor::Red, true);
-			PlayImpactEffect(World, OutHit);
+			PlayImpactEffect(World, OutHit);//本地如果到这里也会执行，只是不会进行广播
 		}
 		SpawnBeamParticle(World, SocketTransform, BeamEnd);
 	}

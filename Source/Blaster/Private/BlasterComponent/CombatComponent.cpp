@@ -285,14 +285,29 @@ void UCombatComponent::FireShotgun()
 	if (Shotgun == nullptr || Character == nullptr) return;
 	if (!IsReloadingShotgun() && CombatState != ECombatState::ECS_Unoccupied) return;
 	
-	TArray<FVector> HitTargets;
-	Shotgun->ShoutgunTraceEndWithScatter(HitTarget,HitTargets);
+	TArray<FVector_NetQuantize> HitTargets;//共用的数据
+	Shotgun->ShotgunTraceEndWithScatter(HitTarget,HitTargets);
+	if (Character->IsLocallyControlled() && !Character->HasAuthority())
+	{
+		ShotgunLocalFire(HitTargets);
+	}
+	ServerShotgunFire(HitTargets);
 }
 
 void UCombatComponent::LocalFire(const FVector_NetQuantize& TraceHitTarget)
 {
 	Character->PlayFireMontage(bAiming);
 	EquippedWeapon->Fire(TraceHitTarget); // 播放本地的枪口火焰和音效
+}
+
+void UCombatComponent::ShotgunLocalFire(const TArray<FVector_NetQuantize>& TraceHitTargets)
+{
+	AWeaponShotgun* Shotgun = Cast<AWeaponShotgun>(EquippedWeapon);
+	if (Shotgun == nullptr || Character == nullptr) return;
+	if (!IsReloadingShotgun() && CombatState != ECombatState::ECS_Unoccupied) return;//只有霰弹枪换弹的时候才能开火
+	
+	Character->PlayFireMontage(bAiming);
+	Shotgun->FireShotgun(TraceHitTargets);
 }
 
 void UCombatComponent::ServerFire_Implementation(FVector_NetQuantize TraceHitTarget)
@@ -316,6 +331,29 @@ void UCombatComponent::ServerFire_Implementation(FVector_NetQuantize TraceHitTar
 	EquippedWeapon->Fire(TraceHitTarget);
 	// 目前没有伤害逻辑，所以服务器唯一的工作就是拿大喇叭广播给其他人
 	NetMulticastFire(TraceHitTarget);
+}
+
+void UCombatComponent::ServerShotgunFire_Implementation(const TArray<FVector_NetQuantize>& TraceHitTargets)
+{
+	if (EquippedWeapon == nullptr || Character == nullptr) return;
+	if (!IsReloadingShotgun() && CombatState != ECombatState::ECS_Unoccupied)//只有霰弹枪换弹的时候才能开火
+	{
+		return;
+	}
+	if (IsReloadingShotgun())
+	{
+		CombatState = ECombatState::ECS_Unoccupied;
+	}
+	
+	Character->PlayFireMontage(bAiming);
+	
+	AWeaponShotgun* Shotgun = Cast<AWeaponShotgun>(EquippedWeapon);
+	if (Shotgun)
+	{
+		Shotgun->FireShotgun(TraceHitTargets);
+	}
+	
+	MulticastShotgunFire(TraceHitTargets);
 }
 
 void UCombatComponent::NetMulticastFire_Implementation(FVector_NetQuantize TraceHitTarget)
@@ -342,6 +380,27 @@ void UCombatComponent::NetMulticastFire_Implementation(FVector_NetQuantize Trace
 	LocalFire(TraceHitTarget);
 }
 
+void UCombatComponent::MulticastShotgunFire_Implementation(const TArray<FVector_NetQuantize>& TraceHitTargets)
+{
+	if (Character == nullptr || EquippedWeapon == nullptr) return;
+	// 服务器已经在 ServerFire_Implementation 里执行过了，避免重复播放/重复逻辑
+	if (Character->HasAuthority()) return;
+
+	// 开火者本地已经预测播放过了，避免播两遍
+	if (Character->IsLocallyControlled())return;
+	
+	//霰弹枪可以直接开火
+	const bool bReloadingShotgun = IsReloadingShotgun();
+	if (!bReloadingShotgun && CombatState != ECombatState::ECS_Unoccupied)
+	{
+		return;
+	}
+	if (bReloadingShotgun)
+	{
+		CombatState = ECombatState::ECS_Unoccupied;
+	}
+	ShotgunLocalFire(TraceHitTargets);
+}
 void UCombatComponent::StartFireTimer()
 {
 	if (Character == nullptr || Character->GetWorld() == nullptr) return;

@@ -3,7 +3,6 @@
 
 #include "Weapon/WeaponShotgun.h"
 
-#include "Blaster/Blaster.h"
 #include "Character/BlasterCharacter.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/GameplayStatics.h"
@@ -15,10 +14,10 @@ AWeaponShotgun::AWeaponShotgun()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void AWeaponShotgun::Fire(const FVector& HitLocation)
+void AWeaponShotgun::FireShotgun(const TArray<FVector_NetQuantize>& HitTargets)
 {
-	ABlasterWeapon::Fire(HitLocation);//跳过 HitScanWeapon 的逻辑，之际用更上一级的武器基础开火逻辑
-
+	ABlasterWeapon::Fire(FVector());//跳过 HitScanWeapon 的逻辑，之际用更上一级的武器基础开火逻辑
+	
 	APawn* OwnerPawn = Cast<APawn>(GetOwner());
 	if (OwnerPawn == nullptr) return;
 	AController* InstigatorController = OwnerPawn->GetController();
@@ -30,13 +29,13 @@ void AWeaponShotgun::Fire(const FVector& HitLocation)
 		const FVector Start = SocketTransform.GetLocation();
 
 		TMap<ABlasterCharacter*, uint32> HitMap;//玩家数量以及被命中的弹丸数量
-		for (uint32 i = 0; i < NumberOfPellets; i++)
+		for (FVector_NetQuantize HitTarget : HitTargets)
 		{
 			FHitResult FireHit;
-			WeaponTraceHit(Start, HitLocation, FireHit, SocketTransform);
+			WeaponTraceHit(Start, HitTarget, FireHit, SocketTransform);
 
 			ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
-			if (BlasterCharacter && HasAuthority())
+			if (BlasterCharacter)
 			{
 				if (HitMap.Contains(BlasterCharacter))
 				{
@@ -61,7 +60,7 @@ void AWeaponShotgun::Fire(const FVector& HitLocation)
 	}
 }
 
-void AWeaponShotgun::ShoutgunTraceEndWithScatter(const FVector& HitLocation, TArray<FVector>& HitTargets)
+void AWeaponShotgun::ShotgunTraceEndWithScatter(const FVector& HitLocation, TArray<FVector_NetQuantize>& HitTargets)
 {
 	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName("MuzzleFlash");
 	if (MuzzleFlashSocket == nullptr) return;
