@@ -664,6 +664,7 @@ void UCombatComponent::Reload()
 		if (Character && CombatState != ECombatState::ECS_Reloading)
 		{
 			ServerReload();
+			HandleReload();
 		}
 	}
 }
@@ -671,7 +672,7 @@ void UCombatComponent::Reload()
 void UCombatComponent::ServerReload_Implementation()
 {
 	CombatState = ECombatState::ECS_Reloading;
-	HandleReload();
+	if (!Character->IsLocallyControlled()) HandleReload();
 }
 
 void UCombatComponent::HandleReload()
@@ -727,7 +728,7 @@ void UCombatComponent::OnRep_CombatState()
 	switch (CombatState)
 	{
 	case ECombatState::ECS_Reloading:
-		HandleReload();
+		if (!Character->IsLocallyControlled()) HandleReload();
 		break;
 	case ECombatState::ECS_Unoccupied:
 		/*if (bFireButtonPressed)//客户端不是立刻知道，可能 fire 失败
