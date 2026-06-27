@@ -16,7 +16,7 @@
 #include "Weapon/WeaponShotgun.h"
 
 
-UCombatComponent::UCombatComponent(): bAiming(false), bFireButtonPressed(false), HitTarget()
+UCombatComponent::UCombatComponent(): bFireButtonPressed(false), HitTarget()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
@@ -493,7 +493,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(UCombatComponent, EquippedWeapon);
 	DOREPLIFETIME(UCombatComponent, SecondaryWeapon);
-	DOREPLIFETIME_CONDITION(UCombatComponent, bAiming, COND_SkipOwner);
+	DOREPLIFETIME(UCombatComponent, bAiming);
 	DOREPLIFETIME_CONDITION(UCombatComponent, bFireButtonPressed, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
 	DOREPLIFETIME(UCombatComponent, CombatState);
@@ -831,6 +831,14 @@ void UCombatComponent::TryFireAfterReload()
 	Fire();
 }
 
+void UCombatComponent::OnRep_Aiming()
+{
+	if (Character && Character->IsLocallyControlled())
+	{
+		bAiming = bAimButtonPressed;//当客户端快速按下和松开时，已经是false了，如果用服务器值，就会因为延迟而播放两次
+	}
+}
+
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
 	bAiming = bIsAiming;//预测，本地执行，其它端包括服务器不知道，该函数是普通函数，只会在本地端执行
@@ -860,6 +868,7 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	{
 		Character->ShowSniperScopeWidget(bIsAiming);
 	}
+	if (Character->IsLocallyControlled()) bAimButtonPressed = bIsAiming;
 }
 
 void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
