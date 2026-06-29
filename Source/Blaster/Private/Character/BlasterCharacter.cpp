@@ -6,6 +6,7 @@
 #include "Blaster/Blaster.h"
 #include "BlasterComponent/BuffComponent.h"
 #include "BlasterComponent/CombatComponent.h"
+#include "BlasterComponent/LagCompensationComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -46,6 +47,8 @@ ABlasterCharacter::ABlasterCharacter()
 
 	Buff = CreateDefaultSubobject<UBuffComponent>(FName("BuffComponent"));
 	Buff->SetIsReplicated(true);
+	
+	LagCompensation = CreateDefaultSubobject<ULagCompensationComponent>(FName("LagCompensation"));
 	
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh);
@@ -481,6 +484,14 @@ void ABlasterCharacter::PostInitializeComponents()
 		Buff->Character = this;
 		Buff->SetInitialSpeeds(GetCharacterMovement()->MaxWalkSpeed, GetCharacterMovement()->MaxWalkSpeed);
 		Buff->SetInitialJumpVelocity(GetCharacterMovement()->JumpZVelocity);
+	}
+	if (LagCompensation)
+	{
+		LagCompensation->Character = this;
+		if (Controller)
+		{
+			LagCompensation->Controller = Cast<ABlasterPlayerController>(Controller);
+		}
 	}
 }
 

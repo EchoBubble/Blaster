@@ -6,6 +6,34 @@
 #include "Components/ActorComponent.h"
 #include "LagCompensationComponent.generated.h"
 
+class ABlasterPlayerController;
+
+USTRUCT(BlueprintType)
+struct FBoxInformation
+{
+	GENERATED_BODY()
+	
+	UPROPERTY()
+	FVector Location;
+	
+	UPROPERTY()
+	FRotator Rotation;
+	
+	UPROPERTY()
+	FVector BoxExtent;//范围
+};
+
+USTRUCT(BlueprintType)
+struct FFramePackage
+{
+	GENERATED_BODY()
+	
+	UPROPERTY()
+	float Time = 0.f;
+	
+	UPROPERTY()
+	TMap<FName, FBoxInformation> HitBoxInfo;
+};
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class BLASTER_API ULagCompensationComponent : public UActorComponent
@@ -15,6 +43,7 @@ class BLASTER_API ULagCompensationComponent : public UActorComponent
 public:
 
 	ULagCompensationComponent();
+	friend class ABlasterCharacter;
 
 protected:
 
@@ -24,4 +53,14 @@ public:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
+	
+	
+private:
+	
+	UPROPERTY()
+	TObjectPtr<ABlasterCharacter> Character;
+	
+	UPROPERTY()
+	TObjectPtr<ABlasterPlayerController> Controller;
+	
 };

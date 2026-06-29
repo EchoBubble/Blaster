@@ -10,6 +10,7 @@
 #include "Blaster/Public/BlasterType/CombatState.h"
 #include "BlasterCharacter.generated.h"
 
+class ULagCompensationComponent;
 class UBoxComponent;
 class UBuffComponent;
 class UTimelineComponent;
@@ -255,6 +256,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UBuffComponent> Buff;
+	
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<ULagCompensationComponent> LagCompensation;
 	
 	void SetOverlappingWeapon(ABlasterWeapon* Weapon);
 	bool IsWeaponEquipped();
