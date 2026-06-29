@@ -7,6 +7,7 @@
 #include "BlasterComponent/BuffComponent.h"
 #include "BlasterComponent/CombatComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -56,6 +57,73 @@ ABlasterCharacter::ABlasterCharacter()
 	SetMinNetUpdateFrequency(33.f);
 
 	DissolveTimeline = CreateDefaultSubobject<UTimelineComponent>(FName("DissolveTimelineComponent"));
+	
+	/*
+	 * Hit boxes for server-side rewind
+	 */
+	head = CreateDefaultSubobject<UBoxComponent>(FName("head"));
+	head->SetupAttachment(GetMesh(), FName("head"));
+	head->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	pelvis = CreateDefaultSubobject<UBoxComponent>(FName("pelvis"));
+	pelvis->SetupAttachment(GetMesh(), FName("pelvis"));
+	pelvis->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	spine_03 = CreateDefaultSubobject<UBoxComponent>(FName("spine_03"));
+	spine_03->SetupAttachment(GetMesh(), FName("spine_03"));
+	spine_03->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	spine_05 = CreateDefaultSubobject<UBoxComponent>(FName("spine_05"));
+	spine_05->SetupAttachment(GetMesh(), FName("spine_05"));
+	spine_05->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	upperarm_l = CreateDefaultSubobject<UBoxComponent>(FName("upperarm_l"));
+	upperarm_l->SetupAttachment(GetMesh(), FName("upperarm_l"));
+	upperarm_l->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	upperarm_r = CreateDefaultSubobject<UBoxComponent>(FName("upperarm_r"));
+	upperarm_r->SetupAttachment(GetMesh(), FName("upperarm_r"));
+	upperarm_r->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	lowerarm_l = CreateDefaultSubobject<UBoxComponent>(FName("lowerarm_l"));
+	lowerarm_l->SetupAttachment(GetMesh(), FName("lowerarm_l"));
+	lowerarm_l->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	lowerarm_r = CreateDefaultSubobject<UBoxComponent>(FName("lowerarm_r"));
+	lowerarm_r->SetupAttachment(GetMesh(), FName("lowerarm_r"));
+	lowerarm_r->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	hand_l = CreateDefaultSubobject<UBoxComponent>(FName("hand_l"));
+	hand_l->SetupAttachment(GetMesh(), FName("hand_l"));
+	hand_l->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	hand_r = CreateDefaultSubobject<UBoxComponent>(FName("hand_r"));
+	hand_r->SetupAttachment(GetMesh(), FName("hand_r"));
+	hand_r->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	thigh_l = CreateDefaultSubobject<UBoxComponent>(FName("thigh_l"));
+	thigh_l->SetupAttachment(GetMesh(), FName("thigh_l"));
+	thigh_l->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	thigh_r = CreateDefaultSubobject<UBoxComponent>(FName("thigh_r"));
+	thigh_r->SetupAttachment(GetMesh(), FName("thigh_r"));
+	thigh_r->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	calf_l = CreateDefaultSubobject<UBoxComponent>(FName("calf_l"));
+	calf_l->SetupAttachment(GetMesh(), FName("calf_l"));
+	calf_l->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	calf_r = CreateDefaultSubobject<UBoxComponent>(FName("calf_r"));
+	calf_r->SetupAttachment(GetMesh(), FName("calf_r"));
+	calf_r->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	foot_l = CreateDefaultSubobject<UBoxComponent>(FName("foot_l"));
+	foot_l->SetupAttachment(GetMesh(), FName("foot_l"));
+	foot_l->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	foot_r = CreateDefaultSubobject<UBoxComponent>(FName("foot_r"));
+	foot_r->SetupAttachment(GetMesh(), FName("foot_r"));
+	foot_r->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
 }
 

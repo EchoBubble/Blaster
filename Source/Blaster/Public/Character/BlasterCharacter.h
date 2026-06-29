@@ -10,6 +10,7 @@
 #include "Blaster/Public/BlasterType/CombatState.h"
 #include "BlasterCharacter.generated.h"
 
+class UBoxComponent;
 class UBuffComponent;
 class UTimelineComponent;
 class ABlasterPlayerController;
@@ -71,6 +72,57 @@ public:
 	void UpdateHUDAmmo();//无需调用，其实装备武器时就更新了，教程只是多一条路
 
 	void SpawnDefaultWeapon();
+	
+	/*
+	 *  Hit boxes used for server-side rewind
+	 */
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBoxComponent> head;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBoxComponent> pelvis;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBoxComponent> spine_03;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBoxComponent> spine_05;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBoxComponent> upperarm_l;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBoxComponent> upperarm_r;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBoxComponent> lowerarm_l;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBoxComponent> lowerarm_r;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBoxComponent> hand_l;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBoxComponent> hand_r;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBoxComponent> thigh_l;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBoxComponent> thigh_r;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBoxComponent> calf_l;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBoxComponent> calf_r;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBoxComponent> foot_l;
+	
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UBoxComponent> foot_r;
 
 	//仅测试
 	void ApplyRecoil(float PitchKick, float YawKick, float RecoveryRatio, float RecoverySpeed);
