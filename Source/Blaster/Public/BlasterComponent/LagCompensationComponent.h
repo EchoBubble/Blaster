@@ -44,10 +44,12 @@ public:
 
 	ULagCompensationComponent();
 	friend class ABlasterCharacter;
+	void ShowFramePackage(const FFramePackage& Package, FColor Color);
 
 protected:
 
 	virtual void BeginPlay() override;
+	void SaveFramePackage(FFramePackage& Package);
 
 public:
 

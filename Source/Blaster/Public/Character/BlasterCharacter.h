@@ -125,6 +125,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UBoxComponent> foot_r;
 
+	UPROPERTY()
+	TMap<FName, UBoxComponent*> HitCollisionBoxes;
+	
 	//仅测试
 	void ApplyRecoil(float PitchKick, float YawKick, float RecoveryRatio, float RecoverySpeed);
 
